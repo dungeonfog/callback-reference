@@ -1,12 +1,10 @@
-use uuid::Uuid;
-
-pub struct CallbackReference {
-    handle: Uuid,
+pub struct CallbackReference<HANDLE> where HANDLE: Eq + std::hash::Hash + std::fmt::Debug {
+    handle: HANDLE,
     drop_handler: Option<Box<dyn FnOnce() + 'static + Send>>,
 }
 
-impl CallbackReference {
-    pub fn new(handle: Uuid, drop_handler: impl FnOnce() + 'static + Send) -> Self {
+impl<HANDLE> CallbackReference<HANDLE> where HANDLE: Eq + std::hash::Hash + std::fmt::Debug {
+    pub fn new(handle: HANDLE, drop_handler: impl FnOnce() + 'static + Send) -> Self {
         Self {
             handle,
             drop_handler: Some(Box::new(drop_handler)),
@@ -14,33 +12,33 @@ impl CallbackReference {
     }
 }
 
-impl std::cmp::PartialEq for CallbackReference {
+impl<HANDLE> std::cmp::PartialEq for CallbackReference<HANDLE> where HANDLE: Eq + std::hash::Hash + std::fmt::Debug {
     fn eq(&self, other: &Self) -> bool {
         self.handle == other.handle
     }
 }
-impl std::cmp::Eq for CallbackReference {}
+impl<HANDLE> std::cmp::Eq for CallbackReference<HANDLE> where HANDLE: Eq + std::hash::Hash + std::fmt::Debug {}
 
-impl std::hash::Hash for CallbackReference {
+impl<HANDLE> std::hash::Hash for CallbackReference<HANDLE> where HANDLE: Eq + std::hash::Hash + std::fmt::Debug {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.handle.hash(state);
     }
 }
 
-impl std::borrow::Borrow<Uuid> for CallbackReference {
-    fn borrow(&self) -> &Uuid {
+impl<HANDLE> std::borrow::Borrow<HANDLE> for CallbackReference<HANDLE> where HANDLE: Eq + std::hash::Hash + std::fmt::Debug {
+    fn borrow(&self) -> &HANDLE {
         &self.handle
     }
 }
 
-impl Drop for CallbackReference {
+impl<HANDLE> Drop for CallbackReference<HANDLE> where HANDLE: Eq + std::hash::Hash + std::fmt::Debug {
     fn drop(&mut self) {
         self.drop_handler.take().unwrap()()
     }
 }
 
 use std::fmt;
-impl fmt::Debug for CallbackReference {
+impl<HANDLE> fmt::Debug for CallbackReference<HANDLE> where HANDLE: Eq + std::hash::Hash + std::fmt::Debug {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("CallbackReference")
          .field("handle", &self.handle)
