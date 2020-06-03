@@ -2,11 +2,11 @@ use uuid::Uuid;
 
 pub struct CallbackReference {
     handle: Uuid,
-    drop_handler: Option<Box<dyn FnOnce(Uuid) + 'static + Send>>,
+    drop_handler: Option<Box<dyn FnOnce() + 'static + Send>>,
 }
 
 impl CallbackReference {
-    pub fn new(handle: Uuid, drop_handler: impl FnOnce(Uuid) + 'static + Send) -> Self {
+    pub fn new(handle: Uuid, drop_handler: impl FnOnce() + 'static + Send) -> Self {
         Self {
             handle,
             drop_handler: Some(Box::new(drop_handler)),
@@ -35,7 +35,7 @@ impl std::borrow::Borrow<Uuid> for CallbackReference {
 
 impl Drop for CallbackReference {
     fn drop(&mut self) {
-        self.drop_handler.take().unwrap()(self.handle)
+        self.drop_handler.take().unwrap()()
     }
 }
 
