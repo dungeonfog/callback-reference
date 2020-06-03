@@ -1,10 +1,10 @@
 pub struct CallbackReference<HANDLE> where HANDLE: Eq + std::hash::Hash + std::fmt::Debug {
     handle: HANDLE,
-    drop_handler: Option<Box<dyn FnOnce() + 'static + Send>>,
+    drop_handler: Option<Box<dyn FnOnce() + 'static>>,
 }
 
 impl<HANDLE> CallbackReference<HANDLE> where HANDLE: Eq + std::hash::Hash + std::fmt::Debug {
-    pub fn new(handle: HANDLE, drop_handler: impl FnOnce() + 'static + Send) -> Self {
+    pub fn new(handle: HANDLE, drop_handler: impl FnOnce() + 'static) -> Self {
         Self {
             handle,
             drop_handler: Some(Box::new(drop_handler)),
